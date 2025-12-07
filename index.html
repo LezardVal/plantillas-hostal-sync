@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plantillas Dinámicas Hostal</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .template { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: white; }
+        h2 { color: #333; font-size: 1.2em; margin-top: 0; }
+        .content { white-space: pre-wrap; margin-bottom: 10px; border: 1px dashed #ccc; padding: 10px; background-color: #fafafa; }
+        .copy-btn { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
+        .copy-btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <h1>Respuestas Rápidas Hostal (Sincronizadas)</h1>
+    <div id="templates-container">Cargando plantillas...</div>
+    
+    <script>
+        // *** ⚠️ REEMPLAZA ESTA URL CON TU URL .TSV PUBLICADA DE GOOGLE SHEETS ⚠️ ***
+        const SHEET_URL = 'AQUÍ VA LA URL QUE COPIASTE EN EL PASO 2';
+        
+        // Función de copiado (la misma que da el "un solo tap")
+        function copiarTexto(element, button) {
+            const content = element.innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                
+                // Efecto visual de copiado
+                const originalText = button.innerText;
+                button.innerText = '¡Copiado!';
+                setTimeout(() => {
+                    button.innerText = originalText;
+                }, 1000);
+                
+            }).catch(err => {
+                alert('Error al copiar. Asegúrate de que estás en un sitio web seguro.');
+            });
+        }
+
+        // Función para cargar y mostrar los datos
+        async function loadTemplates() {
+            const container = document.getElementById('templates-container');
+            container.innerHTML = 'Cargando datos...';
+            
+            try {
+                // 1. Petición a la URL pública de Google Sheets
+                const response = await fetch(SHEET_URL);
+                const tsvText = await response.text();
+                
+                // 2. Procesar los datos (separados por tabulaciones y saltos de línea)
+                const rows = tsvText.split('\n').filter(row => row.trim() !== '');
+                let htmlContent = '';
+                
+                rows.forEach((row, index) => {
+                    const columns = row.split('\t');
+                    if (columns.length < 2) return; // Asegurar que haya al menos 2 columnas
+                    
+                    const keyword = columns[0].trim();
+                    const templateText = columns[1].trim();
+                    
+                    if (keyword && templateText) {
+                         // 3. Construir el HTML con el botón de copia
+                        const id = `t-${index}`;
+                        htmlContent += `
+                            <div class="template">
+                                <h2>${keyword}</h2>
+                                <div id="${id}" class="content">${templateText}</div>
+                                <button class="copy-btn" onclick="copiarTexto(document.getElementById('${id}'), this)">✅ Copiar ${keyword}</button>
+                            </div>
+                        `;
+                    }
+                });
+                
+                container.innerHTML = htmlContent;
+                
+            } catch (error) {
+                console.error("Error al cargar la hoja de cálculo:", error);
+                container.innerHTML = 'Error: No se pudieron cargar las plantillas. Revisa la URL publicada.';
+            }
+        }
+
+        loadTemplates(); // Ejecutar la carga al iniciar
+    </script>
+</body>
+</html>
