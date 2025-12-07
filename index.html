@@ -15,55 +15,50 @@
 </head>
 <body>
 
-    <h1>Respuestas Rápidas Hostal (Sincronizadas)</h1>
+    <h1>Plantillas TCH (Sincronizadas)</h1>
     <div id="templates-container">Cargando plantillas...</div>
     
     <script>
-        // *** ⚠️ REEMPLAZA ESTA URL CON TU URL .TSV PUBLICADA DE GOOGLE SHEETS ⚠️ ***
+        // TU URL DE APPS SCRIPT (Ya está corregida aquí)
         const SHEET_URL = 'https://script.google.com/macros/s/AKfycbyoMpNZEM2jv3nU8YuMh2XGhYK4oQKtgraJm-cesloXe2g8rbJ_hWLpseu8wGXu8nP4Gg/exec';
         
-        // Función de copiado (la misma que da el "un solo tap")
+        // Función de copiado
         function copiarTexto(element, button) {
             const content = element.innerText;
             navigator.clipboard.writeText(content).then(() => {
-                
-                // Efecto visual de copiado
                 const originalText = button.innerText;
                 button.innerText = '¡Copiado!';
                 setTimeout(() => {
                     button.innerText = originalText;
                 }, 1000);
-                
             }).catch(err => {
-                alert('Error al copiar. Asegúrate de que estás en un sitio web seguro.');
+                alert('Error al copiar. Asegúrate de que estás en un sitio web seguro (HTTPS).');
             });
         }
 
-        // Función para cargar y mostrar los datos
+        // Función para cargar los datos JSON
         async function loadTemplates() {
             const container = document.getElementById('templates-container');
             container.innerHTML = 'Cargando datos...';
             
             try {
-                // 1. Petición a la URL pública de Google Sheets
+                // 1. Petición a la URL (Apps Script devuelve JSON)
                 const response = await fetch(SHEET_URL);
-                const tsvText = await response.text();
                 
-                // 2. Procesar los datos (separados por tabulaciones y saltos de línea)
-                const rows = tsvText.split('\n').filter(row => row.trim() !== '');
+                // 2. CORRECCIÓN: Usar .json() en lugar de .text()
+                const templates = await response.json(); 
+                
                 let htmlContent = '';
                 
-                rows.forEach((row, index) => {
-                    const columns = row.split('\t');
-                    if (columns.length < 2) return; // Asegurar que haya al menos 2 columnas
-                    
-                    const keyword = columns[0].trim();
-                    const templateText = columns[1].trim();
+                // 3. Iterar sobre la lista de plantillas
+                templates.forEach((template, index) => {
+                    // Accedemos a las propiedades 'keyword' y 'text' que definimos en el Apps Script
+                    const keyword = template.keyword; 
+                    const templateText = template.text; 
                     
                     if (keyword && templateText) {
-                         // 3. Construir el HTML con el botón de copia
-                        const id = `t-${index}`;
-                        htmlContent += `
+                         const id = `t-${index}`;
+                         htmlContent += `
                             <div class="template">
                                 <h2>${keyword}</h2>
                                 <div id="${id}" class="content">${templateText}</div>
@@ -76,13 +71,12 @@
                 container.innerHTML = htmlContent;
                 
             } catch (error) {
-                console.error("Error al cargar la hoja de cálculo:", error);
-                container.innerHTML = 'Error: No se pudieron cargar las plantillas. Revisa la URL publicada.';
+                console.error("Error al cargar:", error);
+                container.innerHTML = 'Error: No se pudieron cargar las plantillas. Revisa la consola para más detalles.';
             }
         }
 
-        loadTemplates(); // Ejecutar la carga al iniciar
+        loadTemplates(); 
     </script>
 </body>
 </html>
-
