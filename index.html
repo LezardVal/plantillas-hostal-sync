@@ -8,35 +8,39 @@
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
         h1 { color: #333; margin-bottom: 30px; }
         
-        .search-container { margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: white; }
+        .search-container { margin-bottom: 10px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: white; }
         
-        /* Estilos del campo de autocompletado */
-        #search-input { 
+        /* Estilos generales para todos los inputs de búsqueda */
+        .search-input { 
             width: 100%; 
             padding: 12px; 
             font-size: 1.1em; 
             border: 2px solid #ccc; 
             border-radius: 5px;
-            box-sizing: border-box; /* Incluye padding en el ancho */
+            box-sizing: border-box; 
         }
 
-        /* Área de resultado/copiado */
-        #result-area { 
-            margin-top: 20px; 
+        /* Estilos generales para todas las áreas de resultado */
+        .result-area { 
+            margin-top: 10px; 
             padding: 15px; 
             border: 1px solid #007bff; 
             border-radius: 5px; 
             background-color: #e6f0ff; 
-            min-height: 80px; 
+            min-height: 60px; 
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        #template-text { 
+        
+        /* Texto de la plantilla */
+        .template-text { 
             white-space: pre-wrap; 
             margin-bottom: 10px; 
             color: #0056b3; 
+            font-size: 0.9em;
         }
+
         .copy-btn { 
             background-color: #28a745; 
             color: white; 
@@ -46,42 +50,74 @@
             cursor: pointer; 
             transition: background-color 0.3s; 
             width: 100%;
+            font-weight: bold;
         }
         .copy-btn:hover { background-color: #1e7e34; }
+        .copy-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
     </style>
 </head>
 <body>
 
-    <h1>Búsqueda de Plantillas RCH (TCH)</h1>
-    
-    <div class="search-container">
-        <label for="search-input">Buscar o Seleccionar Plantilla:</label>
-        
-        <input list="template-keywords" id="search-input" placeholder="Escribe /saludo o selecciona...">
-        
-        <datalist id="template-keywords"></datalist>
-    </div>
-    
-    <div id="result-area">
-        <div id="template-text">Selecciona una palabra clave para ver y copiar el texto.</div>
-        <button id="copy-button" class="copy-btn" disabled>Selecciona una plantilla</button>
-    </div>
+    <h1>Clipboard v0.2 (Multi-Caja)</h1>
     
     <div id="loading-status">Cargando plantillas...</div>
+    <br>
+
+    <div class="search-container">
+        <label><b>Caja 1:</b></label>
+        <input list="template-keywords" id="input-1" class="search-input" placeholder="Buscar plantilla...">
+        <div class="result-area">
+            <div id="text-1" class="template-text">...</div>
+            <button id="btn-1" class="copy-btn" disabled>Copiar</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <label><b>Caja 2:</b></label>
+        <input list="template-keywords" id="input-2" class="search-input" placeholder="Buscar plantilla...">
+        <div class="result-area">
+            <div id="text-2" class="template-text">...</div>
+            <button id="btn-2" class="copy-btn" disabled>Copiar</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <label><b>Caja 3:</b></label>
+        <input list="template-keywords" id="input-3" class="search-input" placeholder="Buscar plantilla...">
+        <div class="result-area">
+            <div id="text-3" class="template-text">...</div>
+            <button id="btn-3" class="copy-btn" disabled>Copiar</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <label><b>Caja 4:</b></label>
+        <input list="template-keywords" id="input-4" class="search-input" placeholder="Buscar plantilla...">
+        <div class="result-area">
+            <div id="text-4" class="template-text">...</div>
+            <button id="btn-4" class="copy-btn" disabled>Copiar</button>
+        </div>
+    </div>
+    
+    <datalist id="template-keywords"></datalist>
 
     <script>
-        // TU URL DE APPS SCRIPT (Mantenemos la URL correcta)
+        // URL DE APPS SCRIPT
         const SHEET_URL = 'https://script.google.com/macros/s/AKfycbys5nLM12ACSSEFR2WFlbqEG0EOmDXPSZkqJOlFgd1kh_kc10ywBQxftV4SbRBp7Nj1Mg/exec';
         
-        // Almacenará todas las plantillas una vez cargadas {keyword: template_object}
         let templateDataMap = {}; 
-        
-        const searchInput = document.getElementById('search-input');
         const dataList = document.getElementById('template-keywords');
-        const templateTextDiv = document.getElementById('template-text');
-        const copyButton = document.getElementById('copy-button');
         const loadingStatus = document.getElementById('loading-status');
 
+        // Configuración de las cajas (IDs de cada elemento)
+        const boxes = [
+            { input: 'input-1', text: 'text-1', btn: 'btn-1' },
+            { input: 'input-2', text: 'text-2', btn: 'btn-2' },
+            { input: 'input-3', text: 'text-3', btn: 'btn-3' },
+            { input: 'input-4', text: 'text-4', btn: 'btn-4' }
+        ];
 
         // --- FUNCIÓN DE COPIADO ---
         function copiarTexto(content, button) {
@@ -92,70 +128,64 @@
                     button.innerText = originalText;
                 }, 1000);
             }).catch(err => {
-                alert('Error al copiar. Asegúrate de que estás en un sitio web seguro (HTTPS).');
+                alert('Error al copiar.');
             });
         }
         
-        // --- FUNCIÓN DE BÚSQUEDA Y DISPLAY ---
-        function displayTemplate() {
-            const keyword = searchInput.value.trim();
-            const template = templateDataMap[keyword];
+        // --- CONFIGURAR UNA CAJA INDIVIDUAL ---
+        function setupBox(boxConfig) {
+            const inputEl = document.getElementById(boxConfig.input);
+            const textEl = document.getElementById(boxConfig.text);
+            const btnEl = document.getElementById(boxConfig.btn);
 
-            if (template) {
-                // Si la palabra clave existe:
-                templateTextDiv.innerText = template.text;
-                copyButton.innerText = `✅ Copiar ${keyword}`;
-                copyButton.disabled = false;
-                
-                // Asignar el evento de copiado
-                copyButton.onclick = () => copiarTexto(template.text, copyButton);
-            } else {
-                // Si la palabra clave no existe:
-                templateTextDiv.innerText = `Buscando: ${keyword}... (Plantilla no encontrada)`;
-                copyButton.innerText = 'Selecciona una plantilla';
-                copyButton.disabled = true;
-                copyButton.onclick = null;
-            }
+            // Escuchar cambios en este input específico
+            inputEl.addEventListener('input', () => {
+                const keyword = inputEl.value.trim();
+                const template = templateDataMap[keyword];
+
+                if (template) {
+                    textEl.innerText = template.text;
+                    btnEl.innerText = `Copiar ${keyword}`;
+                    btnEl.disabled = false;
+                    btnEl.onclick = () => copiarTexto(template.text, btnEl);
+                } else {
+                    textEl.innerText = keyword ? '(No encontrada)' : '...';
+                    btnEl.innerText = 'Copiar';
+                    btnEl.disabled = true;
+                    btnEl.onclick = null;
+                }
+            });
         }
 
         // --- FUNCIÓN DE CARGA PRINCIPAL ---
         async function loadTemplates() {
-            loadingStatus.innerText = 'Cargando datos...';
-            
             try {
                 const response = await fetch(SHEET_URL);
                 const templates = await response.json(); 
                 
-                // Llenar el mapa de datos y la datalist
                 templates.forEach(template => {
                     const keyword = template.keyword.trim();
                     const text = template.text.trim();
                     
                     if (keyword && text) {
-                        // 1. Llenar el mapa para búsqueda rápida por palabra clave
+                        // 1. Guardar en memoria
                         templateDataMap[keyword] = template;
                         
-                        // 2. Llenar la datalist con las opciones
+                        // 2. Agregar a la lista desplegable compartida
                         const option = document.createElement('option');
                         option.value = keyword;
                         dataList.appendChild(option);
                     }
                 });
                 
-                loadingStatus.innerText = `✅ ${templates.length} plantillas cargadas.`;
+                loadingStatus.innerText = `✅ ${templates.length} plantillas cargadas. Listo para usar.`;
 
-                // Asignar el evento al campo de búsqueda (se dispara al escribir o seleccionar)
-                searchInput.addEventListener('input', displayTemplate);
-                
-                // Si hay plantillas, mostrar la primera
-                if (templates.length > 0) {
-                    searchInput.value = templates[0].keyword;
-                    displayTemplate();
-                }
+                // 3. Inicializar todas las cajas definidas en el arreglo 'boxes'
+                boxes.forEach(box => setupBox(box));
 
             } catch (error) {
-                console.error("Error al cargar:", error);
-                loadingStatus.innerText = '🔴 ERROR: No se pudieron cargar las plantillas. Revisa la consola.';
+                console.error("Error:", error);
+                loadingStatus.innerText = '🔴 Error al cargar plantillas.';
             }
         }
 
